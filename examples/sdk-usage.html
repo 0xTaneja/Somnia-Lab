@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Somnia Rug Detection SDK - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .demo-header h3 {
+            margin-bottom: 8px;
+        }
+
+        .demo-content {
+            padding: 24px;
+        }
+
+        .demo-section {
+            margin-bottom: 24px;
+        }
+
+        .demo-section h4 {
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .result-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            min-height: 120px;
+        }
+
+        .result-box pre {
+            font-size: 12px;
+            white-space: pre-wrap;
+            color: #4a5568;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+        }
+
+        .risk-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-low { background: #c6f6d5; color: #22543d; }
+        .risk-medium { background: #feebc8; color: #744210; }
+        .risk-high { background: #fed7d7; color: #822727; }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #48bb78;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Somnia Rug Detection SDK</h1>
+            <p>Live demo showing real-time transaction security analysis on Somnia testnet</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-dot" id="api-status"></span>
+                <span>API: <span id="api-text">Connecting...</span></span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot" id="network-status"></span>
+                <span>Somnia Network: <span id="network-text">Checking...</span></span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot" id="sdk-status"></span>
+                <span>SDK: <span id="sdk-text">Initializing...</span></span>
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Live Transaction Analysis -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <h3>🔍 Live Transaction Analysis</h3>
+                    <p>Test real transactions with our AI-powered detection</p>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-section">
+                        <h4>Sample Scam Transactions</h4>
+                        <button class="btn" onclick="testUnlimitedApproval()">
+                            Test Unlimited Approval
+                        </button>
+                        <button class="btn" onclick="testOwnershipTransfer()">
+                            Test Ownership Transfer
+                        </button>
+                        <button class="btn" onclick="testNormalTransaction()">
+                            Test Normal Transaction
+                        </button>
+                    </div>
+                    
+                    <div class="result-box" id="analysis-result">
+                        <div class="loading">Click a button above to analyze a transaction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SDK Integration Guide -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <h3>🔧 SDK Integration</h3>
+                    <p>Easy integration for your dApp</p>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-section">
+                        <h4>1. Include the SDK</h4>
+                        <div class="code-block">
+&lt;script src="somnia-rug-detector.js"&gt;&lt;/script&gt;</div>
+                    </div>
+                    
+                    <div class="demo-section">
+                        <h4>2. Initialize</h4>
+                        <div class="code-block">
+const detector = new SomniaRugDetector({
+  apiUrl: 'http://localhost:3000/api',
+  autoAnalyze: true,
+  riskThreshold: 7,
+  onHighRisk: (analysis) => {
+    console.log('High risk detected!', analysis);
+  }
+});</div>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>3. Analyze Transactions</h4>
+                        <div class="code-block">
+const analysis = await detector.analyzeTransaction(
+  txData, 
+  contractAddress
+);
+console.log('Risk Score:', analysis.riskScore);</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Network Stats -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <h3>📊 Somnia Network Stats</h3>
+                    <p>Live data from the real Somnia testnet</p>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-section">
+                        <button class="btn" onclick="refreshNetworkStats()">
+                            Refresh Stats
+                        </button>
+                    </div>
+                    
+                    <div class="result-box" id="network-stats">
+                        <div class="loading">Loading network statistics...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Analysis -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <h3>⚙️ Custom Analysis</h3>
+                    <p>Analyze your own transactions</p>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-section">
+                        <h4>Contract Address</h4>
+                        <input type="text" id="custom-contract" 
+                               placeholder="0x..." 
+                               style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 12px;">
+                    </div>
+                    
+                    <div class="demo-section">
+                        <h4>Transaction Data</h4>
+                        <textarea id="custom-data" 
+                                  placeholder="0x..." 
+                                  style="width: 100%; height: 80px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-family: monospace; margin-bottom: 12px;"></textarea>
+                    </div>
+                    
+                    <button class="btn" onclick="analyzeCustomTransaction()">
+                        Analyze Custom Transaction
+                    </button>
+                    
+                    <div class="result-box" id="custom-result">
+                        <div class="loading">Enter transaction details above</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SDK Script -->
+    <script src="../src/sdk/somnia-rug-detector.js"></script>
+    
+    <script>
+        let detector;
+        
+        // Initialize the demo
+        async function initializeDemo() {
+            try {
+                // Initialize SDK
+                detector = new SomniaRugDetector({
+                    apiUrl: 'http://localhost:3000/api',
+                    autoAnalyze: false, // Manual control for demo
+                    showWarnings: false, // We'll show results in our UI
+                    onAnalysis: (analysis) => {
+                        console.log('Analysis completed:', analysis);
+                    },
+                    onError: (error) => {
+                        console.error('SDK Error:', error);
+                    }
+                });
+
+                await detector.init();
+                updateStatus('sdk', true, 'Ready');
+                updateStatus('api', true, 'Connected');
+                
+                // Load network stats
+                await refreshNetworkStats();
+                
+                console.log('🛡️ Demo initialized successfully');
+                
+            } catch (error) {
+                console.error('Demo initialization failed:', error);
+                updateStatus('sdk', false, 'Failed');
+                updateStatus('api', false, 'Disconnected');
+            }
+        }
+
+        // Update status indicators
+        function updateStatus(type, connected, text) {
+            const dot = document.getElementById(`${type}-status`);
+            const textEl = document.getElementById(`${type}-text`);
+            
+            dot.style.background = connected ? '#48bb78' : '#f56565';
+            textEl.textContent = text;
+        }
+
+        // Test unlimited approval scam
+        async function testUnlimitedApproval() {
+            const resultEl = document.getElementById('analysis-result');
+            resultEl.innerHTML = '<div class="loading">Analyzing unlimited approval pattern...</div>';
+            
+            try {
+                const analysis = await detector.analyzeTransaction({
+                    data: '0x095ea7b3000000000000000000000000spender123456789012345678901234567890123456ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                    to: '0x1234567890123456789012345678901234567890',
+                    value: '0x0'
+                }, '0x1234567890123456789012345678901234567890');
+                
+                displayAnalysisResult(analysis, resultEl);
+            } catch (error) {
+                resultEl.innerHTML = `<div style="color: #e53e3e;">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test ownership transfer scam
+        async function testOwnershipTransfer() {
+            const resultEl = document.getElementById('analysis-result');
+            resultEl.innerHTML = '<div class="loading">Analyzing ownership transfer pattern...</div>';
+            
+            try {
+                const analysis = await detector.analyzeTransaction({
+                    data: '0xf2fde38b000000000000000000000000attacker123456789012345678901234567890123456',
+                    to: '0xcontract123456789012345678901234567890123456',
+                    value: '0x0'
+                }, '0xcontract123456789012345678901234567890123456');
+                
+                displayAnalysisResult(analysis, resultEl);
+            } catch (error) {
+                resultEl.innerHTML = `<div style="color: #e53e3e;">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test normal transaction
+        async function testNormalTransaction() {
+            const resultEl = document.getElementById('analysis-result');
+            resultEl.innerHTML = '<div class="loading">Analyzing normal transaction...</div>';
+            
+            try {
+                const analysis = await detector.analyzeTransaction({
+                    data: '0xa9059cbb000000000000000000000000friend1234567890123456789012345678901234567890000000000000000000000000000000000000000000000056bc75e2d630eb9800',
+                    to: '0xtoken1234567890123456789012345678901234567890',
+                    value: '0x0'
+                }, '0xtoken1234567890123456789012345678901234567890');
+                
+                displayAnalysisResult(analysis, resultEl);
+            } catch (error) {
+                resultEl.innerHTML = `<div style="color: #e53e3e;">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Analyze custom transaction
+        async function analyzeCustomTransaction() {
+            const contract = document.getElementById('custom-contract').value;
+            const data = document.getElementById('custom-data').value;
+            const resultEl = document.getElementById('custom-result');
+            
+            if (!contract || !data) {
+                resultEl.innerHTML = '<div style="color: #ed8936;">Please enter both contract address and transaction data</div>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<div class="loading">Analyzing custom transaction...</div>';
+            
+            try {
+                const analysis = await detector.analyzeTransaction({
+                    data: data,
+                    to: contract,
+                    value: '0x0'
+                }, contract);
+                
+                displayAnalysisResult(analysis, resultEl);
+            } catch (error) {
+                resultEl.innerHTML = `<div style="color: #e53e3e;">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Display analysis results
+        function displayAnalysisResult(analysis, element) {
+            const riskClass = analysis.riskScore <= 3 ? 'risk-low' : 
+                             analysis.riskScore <= 6 ? 'risk-medium' : 'risk-high';
+            
+            element.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <strong>Risk Score: ${analysis.riskScore}/10</strong>
+                    <span class="risk-indicator ${riskClass}">${analysis.riskLevel || getRiskLevel(analysis.riskScore)}</span>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <strong>Transaction:</strong> ${analysis.humanDescription || 'Unknown transaction type'}
+                </div>
+                
+                ${analysis.analysis.riskFactors.length > 0 ? `
+                <div style="margin-bottom: 12px;">
+                    <strong>Risk Factors:</strong>
+                    <ul style="margin: 8px 0 0 20px;">
+                        ${analysis.analysis.riskFactors.map(factor => 
+                            `<li>${factor.replace(/_/g, ' ')}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div>
+                    <strong>Recommendations:</strong>
+                    <ul style="margin: 8px 0 0 20px;">
+                        ${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Refresh network stats
+        async function refreshNetworkStats() {
+            const resultEl = document.getElementById('network-stats');
+            resultEl.innerHTML = '<div class="loading">Loading network statistics...</div>';
+            
+            try {
+                const networkInfo = await detector.getNetworkInfo();
+                updateStatus('network', true, `Block ${networkInfo.stats.blockNumber}`);
+                
+                resultEl.innerHTML = `
+                    <div><strong>Network:</strong> ${networkInfo.network.name}</div>
+                    <div><strong>Chain ID:</strong> ${networkInfo.network.chainId}</div>
+                    <div><strong>Block Number:</strong> ${networkInfo.stats.blockNumber.toLocaleString()}</div>
+                    <div><strong>Gas Price:</strong> ${networkInfo.stats.gasPrice.standard} gwei</div>
+                    <div><strong>TPS Capability:</strong> ${networkInfo.stats.tpsCapability}</div>
+                    <div><strong>Finality:</strong> ${networkInfo.stats.finality}</div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #718096;">
+                        Last updated: ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+            } catch (error) {
+                updateStatus('network', false, 'Disconnected');
+                resultEl.innerHTML = `<div style="color: #e53e3e;">Failed to load network stats: ${error.message}</div>`;
+            }
+        }
+
+        function getRiskLevel(score) {
+            if (score <= 3) return 'LOW RISK';
+            if (score <= 6) return 'MEDIUM RISK';
+            return 'HIGH RISK';
+        }
+
+        // Initialize when page loads
+        window.onload = initializeDemo;
+    </script>
+</body>
+</html>
