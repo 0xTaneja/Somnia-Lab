@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "description": "Somnia Lab's AI-powered transaction security analysis. Get real-time vulnerability warnings before signing transactions on Somnia.",
+  "proposedName": "Somnia Lab Security Guard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/rug-detection-api.git"
+  },
+  "source": {
+    "shasum": "vyzMHkNNPEisjBBFQ3XnBbgUVJisChf7BFsQ9up/y3M=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "packageName": "@rug-detection-api/somnia-security-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "snap_dialog": {},
+    "snap_notify": {},
+    "endowment:transaction-insight": {
+      "allowTransactionOrigin": true
+    },
+    "endowment:network-access": {},
+    "endowment:ethereum-provider": {},
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": false
+    }
+  },
+  "platformVersion": "9.3.0",
+  "manifestVersion": "0.1"
+}
