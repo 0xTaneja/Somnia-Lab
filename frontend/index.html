@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rug Detection API - Somnia Security</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .risk-score {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .risk-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .risk-level {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .risk-low { background: #f0fff4; border: 2px solid #68d391; }
+        .risk-low .risk-number { color: #38a169; }
+        .risk-low .risk-level { color: #38a169; }
+
+        .risk-medium { background: #fffbeb; border: 2px solid #f6ad55; }
+        .risk-medium .risk-number { color: #dd6b20; }
+        .risk-medium .risk-level { color: #dd6b20; }
+
+        .risk-high { background: #fed7d7; border: 2px solid #fc8181; }
+        .risk-high .risk-number { color: #e53e3e; }
+        .risk-high .risk-level { color: #e53e3e; }
+
+        .analysis-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .detail-card ul {
+            list-style: none;
+        }
+
+        .detail-card li {
+            padding: 5px 0;
+            color: #4a5568;
+        }
+
+        .detail-card li:before {
+            content: "•";
+            color: #667eea;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .sample-btn {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            color: #4a5568;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s ease;
+        }
+
+        .sample-btn:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Rug Detection API</h1>
+            <p>AI-powered transaction security analysis for Somnia blockchain</p>
+        </div>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="contractAddress">
+                    Contract Address
+                    <button type="button" class="sample-btn" onclick="loadSampleContract()">Load Sample</button>
+                </label>
+                <input type="text" id="contractAddress" placeholder="0x..." />
+            </div>
+
+            <div class="form-group">
+                <label for="transactionData">
+                    Transaction Data (JSON)
+                    <button type="button" class="sample-btn" onclick="loadSampleTransaction()">Load Sample</button>
+                </label>
+                <textarea id="transactionData" placeholder='{"data": "0x...", "value": "0", "to": "0x..."}'></textarea>
+            </div>
+
+            <button class="analyze-btn" onclick="analyzeTransaction()" id="analyzeBtn">
+                🔍 Analyze Transaction
+            </button>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Analyzing transaction for security risks...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="risk-score">
+                <div class="risk-number" id="riskNumber">0</div>
+                <div class="risk-level" id="riskLevel">ANALYZING</div>
+            </div>
+
+            <div class="analysis-details">
+                <div class="detail-card">
+                    <h3>🚨 Risk Factors</h3>
+                    <ul id="riskFactors"></ul>
+                </div>
+
+                <div class="detail-card">
+                    <h3>📋 Recommendations</h3>
+                    <ul id="recommendations"></ul>
+                </div>
+
+                <div class="detail-card">
+                    <h3>🔍 Pattern Analysis</h3>
+                    <ul id="patterns"></ul>
+                </div>
+
+                <div class="detail-card">
+                    <h3>📊 Analysis Details</h3>
+                    <ul id="analysisDetails"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadSampleContract() {
+            document.getElementById('contractAddress').value = '0x1234567890123456789012345678901234567890';
+        }
+
+        function loadSampleTransaction() {
+            const sampleData = {
+                "data": "0xa9059cbb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0",
+                "to": "0x1234567890123456789012345678901234567890",
+                "from": "0x0987654321098765432109876543210987654321"
+            };
+            document.getElementById('transactionData').value = JSON.stringify(sampleData, null, 2);
+        }
+
+        async function analyzeTransaction() {
+            const contractAddress = document.getElementById('contractAddress').value.trim();
+            const transactionData = document.getElementById('transactionData').value.trim();
+            
+            if (!contractAddress || !transactionData) {
+                showError('Please fill in both contract address and transaction data');
+                return;
+            }
+
+            let parsedData;
+            try {
+                parsedData = JSON.parse(transactionData);
+            } catch (e) {
+                showError('Invalid JSON in transaction data');
+                return;
+            }
+
+            showLoading();
+            hideError();
+
+            try {
+                const response = await fetch('/api/analyze-transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contractAddress: contractAddress,
+                        transactionData: parsedData
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError(`Analysis failed: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const riskNumber = document.getElementById('riskNumber');
+            const riskLevel = document.getElementById('riskLevel');
+            
+            // Update risk score
+            riskNumber.textContent = result.riskScore;
+            
+            // Determine risk level and color
+            let level, className;
+            if (result.riskScore <= 3) {
+                level = 'LOW RISK';
+                className = 'risk-low';
+            } else if (result.riskScore <= 6) {
+                level = 'MEDIUM RISK';
+                className = 'risk-medium';
+            } else {
+                level = 'HIGH RISK';
+                className = 'risk-high';
+            }
+            
+            riskLevel.textContent = level;
+            resultsDiv.className = `results ${className}`;
+            
+            // Update risk factors
+            const riskFactorsUl = document.getElementById('riskFactors');
+            riskFactorsUl.innerHTML = '';
+            if (result.analysis.riskFactors.length === 0) {
+                riskFactorsUl.innerHTML = '<li>No significant risk factors detected</li>';
+            } else {
+                result.analysis.riskFactors.forEach(factor => {
+                    const li = document.createElement('li');
+                    li.textContent = factor.replace(/_/g, ' ').toLowerCase();
+                    riskFactorsUl.appendChild(li);
+                });
+            }
+            
+            // Update recommendations
+            const recommendationsUl = document.getElementById('recommendations');
+            recommendationsUl.innerHTML = '';
+            result.recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.textContent = rec;
+                recommendationsUl.appendChild(li);
+            });
+            
+            // Update patterns
+            const patternsUl = document.getElementById('patterns');
+            patternsUl.innerHTML = '';
+            if (result.analysis.patterns.length === 0) {
+                patternsUl.innerHTML = '<li>No suspicious patterns detected</li>';
+            } else {
+                result.analysis.patterns.forEach(pattern => {
+                    const li = document.createElement('li');
+                    li.textContent = pattern;
+                    patternsUl.appendChild(li);
+                });
+            }
+            
+            // Update analysis details
+            const analysisDetailsUl = document.getElementById('analysisDetails');
+            analysisDetailsUl.innerHTML = '';
+            const li1 = document.createElement('li');
+            li1.textContent = `Analysis completed at ${new Date(result.timestamp).toLocaleString()}`;
+            analysisDetailsUl.appendChild(li1);
+            
+            const li2 = document.createElement('li');
+            li2.textContent = `Contract: ${result.contractAddress}`;
+            analysisDetailsUl.appendChild(li2);
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = true;
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Load sample data on page load
+        window.onload = function() {
+            loadSampleContract();
+            loadSampleTransaction();
+        };
+    </script>
+</body>
+</html>
